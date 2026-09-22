@@ -1,0 +1,11 @@
+# .NET
+server/**/bin/
+server/**/obj/
+*.user
+
+# Environment secrets
+.env
+
+# OS
+.DS_Store
+Thumbs.db

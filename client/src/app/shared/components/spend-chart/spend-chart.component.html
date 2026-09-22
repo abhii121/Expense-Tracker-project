@@ -1,0 +1,21 @@
+<div class="spend-chart">
+  @if (data().length === 0) {
+    <p class="text-muted empty-state">No expenses recorded this month yet.</p>
+  } @else {
+    @for (row of data(); track row.categoryId) {
+      <div class="spend-row">
+        <div class="spend-label">
+          <span class="dot" [style.background]="row.color"></span>
+          <span>{{ row.categoryName }}</span>
+        </div>
+        <div class="spend-bar-track">
+          <div class="spend-bar-fill" [style.width]="barWidth(row.total)" [style.background]="row.color"></div>
+        </div>
+        <div class="spend-value">
+          <span>{{ row.total | currency }}</span>
+          <span class="text-muted share">{{ share(row.total) | number: '1.0-0' }}%</span>
+        </div>
+      </div>
+    }
+  }
+</div>

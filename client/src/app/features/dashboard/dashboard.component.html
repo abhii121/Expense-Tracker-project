@@ -1,0 +1,66 @@
+<div class="dashboard">
+  <header class="page-header">
+    <div>
+      <h1>Dashboard</h1>
+      <p class="text-secondary">{{ monthLabel }}</p>
+    </div>
+    <a routerLink="/transactions" class="btn btn-primary">+ Add transaction</a>
+  </header>
+
+  @if (loading()) {
+    <p class="text-muted">Loading your summary…</p>
+  }
+  @if (summary(); as s) {
+    <section class="stat-grid">
+      <div class="card stat-tile">
+        <span class="stat-label text-muted">Income this month</span>
+        <span class="stat-value">{{ s.totalIncome | currency }}</span>
+      </div>
+      <div class="card stat-tile">
+        <span class="stat-label text-muted">Expenses this month</span>
+        <span class="stat-value">{{ s.totalExpense | currency }}</span>
+      </div>
+      <div class="card stat-tile">
+        <span class="stat-label text-muted">Balance</span>
+        <span class="stat-value" [class.negative]="s.balance < 0">{{ s.balance | currency }}</span>
+      </div>
+    </section>
+
+    <section class="chart-grid">
+      <div class="card">
+        <h2>6-month trend</h2>
+        <app-trend-chart [data]="s.monthlyTrend" />
+      </div>
+      <div class="card">
+        <h2>Spending by category</h2>
+        <app-spend-chart [data]="s.expenseByCategory" />
+      </div>
+    </section>
+
+    <section class="card recent-transactions">
+      <div class="section-header">
+        <h2>Recent transactions</h2>
+        <a routerLink="/transactions" class="text-secondary">View all →</a>
+      </div>
+
+      @if (s.recentTransactions.length === 0) {
+        <p class="text-muted">No transactions yet. Add your first one to get started.</p>
+      } @else {
+        <ul class="transaction-list">
+          @for (t of s.recentTransactions; track t.id) {
+            <li class="transaction-row">
+              <span class="dot" [style.background]="t.categoryColor"></span>
+              <div class="transaction-info">
+                <span class="transaction-note">{{ t.note || t.categoryName }}</span>
+                <span class="text-muted transaction-meta">{{ t.categoryName }} · {{ t.date | date: 'mediumDate' }}</span>
+              </div>
+              <span class="transaction-amount" [class.income]="t.type === 'Income'">
+                {{ t.type === 'Income' ? '+' : '-' }}{{ t.amount | currency }}
+              </span>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  }
+</div>

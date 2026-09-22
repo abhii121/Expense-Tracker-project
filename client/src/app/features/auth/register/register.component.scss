@@ -1,0 +1,33 @@
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+
+  h1 {
+    font-size: 24px;
+    margin-bottom: 4px;
+  }
+
+  p.text-secondary {
+    margin-bottom: 24px;
+  }
+
+  .btn {
+    margin-top: 8px;
+  }
+
+  .switch-link {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 14px;
+  }
+}

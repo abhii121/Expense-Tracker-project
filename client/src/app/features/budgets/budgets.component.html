@@ -1,0 +1,72 @@
+<div class="budgets-page">
+  <header class="page-header">
+    <div>
+      <h1>Budgets</h1>
+      <p class="text-secondary">{{ monthLabel }}</p>
+    </div>
+    <button class="btn btn-primary" (click)="startCreate()">+ Set budget</button>
+  </header>
+
+  @if (showForm()) {
+    <form class="card budget-form" [formGroup]="form" (ngSubmit)="submit()">
+      <h2>Set monthly budget</h2>
+
+      <div class="form-field">
+        <label for="categoryId">Category</label>
+        <select id="categoryId" formControlName="categoryId">
+          @for (category of expenseCategories; track category.id) {
+            <option [value]="category.id">{{ category.name }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label for="monthlyLimit">Monthly limit</label>
+        <input id="monthlyLimit" type="number" step="0.01" min="1" formControlName="monthlyLimit" />
+      </div>
+
+      @if (errorMessage()) {
+        <p class="field-error">{{ errorMessage() }}</p>
+      }
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" (click)="cancel()">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
+    </form>
+  }
+
+  @if (loading()) {
+    <p class="text-muted">Loading budgets…</p>
+  } @else if (budgets().length === 0) {
+    <p class="text-muted">No budgets set for this month yet.</p>
+  } @else {
+    <div class="budget-grid">
+      @for (budget of budgets(); track budget.id) {
+        <div class="card budget-card">
+          <div class="budget-header">
+            <span class="dot" [style.background]="budget.categoryColor"></span>
+            <span class="budget-name">{{ budget.categoryName }}</span>
+            <button class="icon-btn" (click)="remove(budget)" aria-label="Delete">🗑️</button>
+          </div>
+
+          <div class="budget-track">
+            <div
+              class="budget-fill"
+              [class.over]="isOverBudget(budget)"
+              [style.width.%]="progressPercent(budget)"
+              [style.background]="budget.categoryColor"
+            ></div>
+          </div>
+
+          <div class="budget-footer">
+            <span [class.over-text]="isOverBudget(budget)">
+              {{ budget.spent | currency }} of {{ budget.monthlyLimit | currency }}
+            </span>
+            <span class="text-muted">{{ progressPercent(budget) | number: '1.0-0' }}%</span>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
