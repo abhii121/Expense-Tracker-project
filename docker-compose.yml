@@ -1,19 +1,18 @@
 services:
   db:
-    image: postgres:17-alpine
+    image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
-      POSTGRES_DB: expense_tracker
-      POSTGRES_USER: expense_app
-      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in a .env file}
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in a .env file}
     volumes:
-      - db-data:/var/lib/postgresql/data
+      - db-data:/var/opt/mssql
     ports:
-      - "5432:5432"
+      - "1433:1433"
 
   api:
     build: ./server/ExpenseTracker.Api
     environment:
-      ConnectionStrings__DefaultConnection: Host=db;Database=expense_tracker;Username=expense_app;Password=${DB_PASSWORD:?set DB_PASSWORD in a .env file}
+      ConnectionStrings__DefaultConnection: Server=db;Database=expensetracker;User Id=sa;Password=${DB_PASSWORD:?set DB_PASSWORD in a .env file};TrustServerCertificate=True;
       Jwt__Secret: ${JWT_SECRET:?set JWT_SECRET in a .env file}
       Jwt__Issuer: ExpenseTracker.Api
       Jwt__Audience: ExpenseTracker.Client

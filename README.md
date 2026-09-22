@@ -5,7 +5,7 @@ budgets per category, import transactions from CSV, and see spending trends
 on a dashboard with charts.
 
 **Stack:** Angular 19 (standalone components, signals) · ASP.NET Core 10 Web API ·
-PostgreSQL · EF Core · JWT auth · Chart.js
+SQL Server · EF Core · JWT auth · Chart.js
 
 ## Features
 
@@ -22,37 +22,36 @@ PostgreSQL · EF Core · JWT auth · Chart.js
 ```
 server/ExpenseTracker.Api/   ASP.NET Core Web API (controllers, EF Core, JWT)
 client/                      Angular app
-docker-compose.yml           Postgres + API + client, for containerized runs
+docker-compose.yml           SQL Server + API + client, for containerized runs
 ```
 
 ## Running locally (no Docker)
 
-**Prerequisites:** .NET 10 SDK, Node 20+, PostgreSQL running locally.
+**Prerequisites:** .NET 10 SDK, Node 20+, SQL Server running locally.
 
 ### 1. Database
 
-Create a dedicated role and database (only needs to be done once):
+Create the database (only needs to be done once):
 
 ```bash
-psql -U postgres -h localhost -f server/setup-db.sql
+sqlcmd -S localhost -E -i server/setup-db.sql
 ```
 
-This creates a `expense_app` role and an `expense_tracker` database it owns.
-(If your Postgres install requires a password for the `postgres` superuser,
-you'll be prompted for it.)
+`-E` uses your current Windows login (Trusted Connection). If your instance
+only supports SQL authentication, connect with `-U`/`-P` instead and adjust
+the connection string in step 2 to match.
 
 ### 2. API
 
 ```bash
 cd server/ExpenseTracker.Api
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Database=expense_tracker;Username=expense_app;Password=ExpenseApp_Dev_2026!"
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost;Database=expensetracker;Trusted_Connection=True;TrustServerCertificate=True;"
 dotnet user-secrets set "Jwt:Secret" "<any long random string>"
 dotnet ef database update   # applies migrations
 dotnet run
 ```
 
-The API listens on `http://localhost:5254`. Swap the password in `setup-db.sql`
-before using this anywhere but your own machine.
+The API listens on `http://localhost:5254`.
 
 ### 3. Client
 
@@ -71,7 +70,9 @@ cp .env.example .env   # set DB_PASSWORD and JWT_SECRET
 docker compose up --build
 ```
 
-Client on `http://localhost:8080`, API on `http://localhost:5254`, Postgres on `5432`.
+Client on `http://localhost:8080`, API on `http://localhost:5254`, SQL Server on `1433`.
+The containerized DB uses SQL auth (`sa` + `DB_PASSWORD`) since Windows/Trusted
+auth isn't available inside a Linux container.
 (Not tested in this environment — Docker wasn't available here — but the
 Dockerfiles and compose file follow the standard multi-stage build pattern.)
 
