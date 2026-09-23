@@ -7,9 +7,23 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// WebApplication.CreateBuilder only loads user-secrets when ASPNETCORE_ENVIRONMENT=Development.
+// Some IDE run configurations (e.g. Rider's default) don't set that variable, so .NET falls back
+// to "Production" and secrets never load. Load explicitly and unconditionally instead — this is
+// a no-op in an actual deployment, since there's no secrets.json file there anyway.
+builder.Configuration.AddUserSecrets<Program>(optional: true);
+
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 var jwtOptions = builder.Configuration.GetSection("Jwt").Get<JwtOptions>()
     ?? throw new InvalidOperationException("Jwt configuration section is missing.");
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException(
+        "Connection string 'DefaultConnection' is not set. Run: " +
+        "dotnet user-secrets set \"ConnectionStrings:DefaultConnection\" \"<your connection string>\"");
+}
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -17,7 +31,7 @@ builder.Services.AddControllers()
 builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(connectionString));
 
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<CategoryService>();

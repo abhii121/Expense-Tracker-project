@@ -2,6 +2,7 @@
 server/**/bin/
 server/**/obj/
 *.user
+.vs/
 
 # Environment secrets
 .env
