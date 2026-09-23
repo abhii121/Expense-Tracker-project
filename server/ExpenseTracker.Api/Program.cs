@@ -13,6 +13,14 @@ var builder = WebApplication.CreateBuilder(args);
 // a no-op in an actual deployment, since there's no secrets.json file there anyway.
 builder.Configuration.AddUserSecrets<Program>(optional: true);
 
+Console.WriteLine(
+    $"[startup] UserSecretsId={typeof(Program).Assembly.GetCustomAttributes(typeof(Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute), false).Cast<Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute>().FirstOrDefault()?.UserSecretsId ?? "(none)"}, " +
+    $"Environment={builder.Environment.EnvironmentName}, " +
+    $"BaseDirectory={AppContext.BaseDirectory}, " +
+    $"AppData={Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}, " +
+    $"Jwt:Secret length={(builder.Configuration["Jwt:Secret"] ?? "").Length}, " +
+    $"ConnectionString length={(builder.Configuration.GetConnectionString("DefaultConnection") ?? "").Length}");
+
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 var jwtOptions = builder.Configuration.GetSection("Jwt").Get<JwtOptions>()
     ?? throw new InvalidOperationException("Jwt configuration section is missing.");
@@ -31,12 +39,6 @@ if (string.IsNullOrWhiteSpace(connectionString))
         "Connection string 'DefaultConnection' is not set. Run: " +
         "dotnet user-secrets set \"ConnectionStrings:DefaultConnection\" \"<your connection string>\"");
 }
-
-Console.WriteLine(
-    $"[startup] UserSecretsId={typeof(Program).Assembly.GetCustomAttributes(typeof(Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute), false).Cast<Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute>().FirstOrDefault()?.UserSecretsId ?? "(none)"}, " +
-    $"Environment={builder.Environment.EnvironmentName}, " +
-    $"Jwt:Secret length={jwtOptions.Secret.Length}, " +
-    $"ConnectionString length={connectionString.Length}");
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
