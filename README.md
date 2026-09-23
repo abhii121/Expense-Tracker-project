@@ -53,6 +53,14 @@ dotnet run
 
 The API listens on `http://localhost:5254`.
 
+> **Running from an IDE (Visual Studio/Rider) instead of the terminal?** Some IDE
+> debugger processes can't see the OS-level `dotnet user-secrets` store even
+> though the file exists and the command above succeeded. If you hit
+> `Jwt:Secret is not set` or a connection-string error only when running from
+> the IDE, copy `server/ExpenseTracker.Api/appsettings.Local.json.example` to
+> `appsettings.Local.json` (same folder) and fill in the same two values —
+> it's git-ignored and loaded unconditionally as a fallback.
+
 ### 3. Client
 
 ```bash
