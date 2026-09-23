@@ -17,6 +17,13 @@ builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 var jwtOptions = builder.Configuration.GetSection("Jwt").Get<JwtOptions>()
     ?? throw new InvalidOperationException("Jwt configuration section is missing.");
 
+if (string.IsNullOrWhiteSpace(jwtOptions.Secret))
+{
+    throw new InvalidOperationException(
+        "Jwt:Secret is not set. Run: " +
+        "dotnet user-secrets set \"Jwt:Secret\" \"<any long random string>\"");
+}
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 if (string.IsNullOrWhiteSpace(connectionString))
 {
@@ -24,6 +31,12 @@ if (string.IsNullOrWhiteSpace(connectionString))
         "Connection string 'DefaultConnection' is not set. Run: " +
         "dotnet user-secrets set \"ConnectionStrings:DefaultConnection\" \"<your connection string>\"");
 }
+
+Console.WriteLine(
+    $"[startup] UserSecretsId={typeof(Program).Assembly.GetCustomAttributes(typeof(Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute), false).Cast<Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute>().FirstOrDefault()?.UserSecretsId ?? "(none)"}, " +
+    $"Environment={builder.Environment.EnvironmentName}, " +
+    $"Jwt:Secret length={jwtOptions.Secret.Length}, " +
+    $"ConnectionString length={connectionString.Length}");
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
