@@ -3,6 +3,7 @@ server/**/bin/
 server/**/obj/
 *.user
 .vs/
+server/**/appsettings.Local.json
 
 # Environment secrets
 .env

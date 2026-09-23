@@ -7,19 +7,12 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// WebApplication.CreateBuilder only loads user-secrets when ASPNETCORE_ENVIRONMENT=Development.
-// Some IDE run configurations (e.g. Rider's default) don't set that variable, so .NET falls back
-// to "Production" and secrets never load. Load explicitly and unconditionally instead — this is
-// a no-op in an actual deployment, since there's no secrets.json file there anyway.
+// WebApplication.CreateBuilder only loads dotnet user-secrets when ASPNETCORE_ENVIRONMENT=Development,
+// and even then some environments can't see the per-user secrets store (e.g. a sandboxed IDE debugger
+// process that can't read %APPDATA%). appsettings.Local.json is a project-local, git-ignored fallback
+// that's always visible to whatever process is running the app.
 builder.Configuration.AddUserSecrets<Program>(optional: true);
-
-Console.WriteLine(
-    $"[startup] UserSecretsId={typeof(Program).Assembly.GetCustomAttributes(typeof(Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute), false).Cast<Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute>().FirstOrDefault()?.UserSecretsId ?? "(none)"}, " +
-    $"Environment={builder.Environment.EnvironmentName}, " +
-    $"BaseDirectory={AppContext.BaseDirectory}, " +
-    $"AppData={Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}, " +
-    $"Jwt:Secret length={(builder.Configuration["Jwt:Secret"] ?? "").Length}, " +
-    $"ConnectionString length={(builder.Configuration.GetConnectionString("DefaultConnection") ?? "").Length}");
+builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
 
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 var jwtOptions = builder.Configuration.GetSection("Jwt").Get<JwtOptions>()
